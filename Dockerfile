@@ -1,21 +1,14 @@
-FROM golang:1.17-buster AS build
+FROM wordpress
 
-WORKDIR /app
+# Set environment variables used by the Wordpress image
+# DB_USER and DB_PASSWORD are included as an example. However,
+# these should be removed and set during docker run.
+ENV WORDPRESS_DB_HOST=127.0.0.1 \
+    WORDPRESS_DB_USER=wpuser \
+    WORDPRESS_DB_PASSWORD=P@ssw0rd! \
+    WORDPRESS_DB_NAME=wpsite \
+    WORDPRESS_TABLE_PREFIX=wp_
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-
-COPY *.go ./
-
-RUN go build -o /lesson-086
-
-FROM gcr.io/distroless/base-debian10
-
-WORKDIR /
-
-COPY --from=build /lesson-086 /lesson-086
-
-USER nonroot:nonroot
-
-ENTRYPOINT ["/lesson-086"]
+COPY plugins/ /var/www/html/wp-content/plugins
+COPY themes/ /var/www/html/wp-content/themes
+COPY uploads/ /var/www/html/wp-content/uploads
